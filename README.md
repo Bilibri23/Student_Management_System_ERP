@@ -1,12 +1,12 @@
 # ERP System - Spring Boot Backend
 
 ## Project Overview
-A comprehensive Enterprise Resource Planning (ERP) system for educational institutions built with Spring Boot, React, and PostgreSQL.
+A comprehensive Enterprise Resource Planning (ERP) system for educational institutions built with Spring Boot, React, and MySQL.
 
 ## Tech Stack
 - **Backend**: Spring Boot 3.3.5, Java 17
 - **Frontend**: React.js (To be implemented)
-- **Database**: PostgreSQL
+- **Database**: MySQL
 - **Security**: JWT Authentication, Spring Security
 - **Build Tool**: Maven
 
@@ -70,12 +70,12 @@ All necessary enums have been created:
 ### Prerequisites
 - Java 17 or higher
 - Maven 3.6+
-- PostgreSQL 12+
-- Node.js 18+ (for frontend)
+- MySQL 8.0+
+- React(for frontend)
 - An IDE (IntelliJ IDEA recommended)
 
 ### Database Setup
-1. Install PostgreSQL
+1. Install MySQL
 2. Create a new database:
 ```sql
 CREATE DATABASE erp_db;
@@ -83,7 +83,7 @@ CREATE DATABASE erp_db;
 
 3. Update database credentials in `src/main/resources/application.properties`:
 ```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/erp_db
+spring.datasource.url=jdbc:mysql://localhost:3306/erp_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
 spring.datasource.username=your_username
 spring.datasource.password=your_password
 ```
@@ -293,6 +293,4 @@ This is a course project. Follow standard Git workflow:
 ## License
 Educational project for Large Systems Environment Course
 
----
-**Project Status**: In Active Development
-**Last Updated**: November 2024
+
