@@ -14,13 +14,14 @@
 
 | Task | Status |
 |------|--------|
-| CourseService & CourseController | ⬜ TODO |
-| EnrollmentService & EnrollmentController | ⬜ TODO |
-| AttendanceService & AttendanceController | ⬜ TODO |
-| GradingService & GradingController | ⬜ TODO |
-| ExamService & ExamController | ⬜ TODO |
-| Academic DTOs (request/response) | ⬜ TODO |
-| Unit tests for Academic module | ⬜ TODO |
+| CourseService & CourseController | ✅ DONE |
+| EnrollmentService & EnrollmentController | ✅ DONE |
+| AttendanceService & AttendanceController | ✅ DONE |
+| GradingService & GradingController | ✅ DONE |
+| ExamService & ExamController | ✅ DONE |
+| Academic DTOs (request/response) | ✅ DONE |
+| PDF Generation (Admit Cards, Transcripts) | ✅ DONE |
+| Unit tests for Academic module | ✅ DONE |
 
 ---
 

@@ -7,8 +7,12 @@ Welcome to the ERP System documentation. This directory contains all project doc
 | Document | Description |
 |----------|-------------|
 | [CONTRIBUTING.md](./CONTRIBUTING.md) | Work distribution, coding conventions, git workflow |
+| [FEATURES.md](./FEATURES.md) | Feature reference based on WPSchool demo |
 | [API.md](./API.md) | API endpoints reference |
 | [SETUP.md](./SETUP.md) | Development environment setup guide |
+
+## Reference System
+**Demo Site**: [WPSchool](https://wpschool.weblizar.com/) - Use this as UI/UX reference
 
 ---
 
