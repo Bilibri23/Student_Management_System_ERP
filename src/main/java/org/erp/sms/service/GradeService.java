@@ -7,6 +7,7 @@ import org.erp.sms.common.exception.ResourceNotFoundException;
 import org.erp.sms.dto.academic.GradeRequest;
 import org.erp.sms.dto.academic.GradeResponse;
 import org.erp.sms.entity.Course;
+import org.erp.sms.entity.Enrollment;
 import org.erp.sms.entity.Grade;
 import org.erp.sms.entity.GradeComponent;
 import org.erp.sms.entity.User;
@@ -317,6 +318,16 @@ public class GradeService {
                 .approved(grade.getApproved())
                 .createdAt(grade.getCreatedAt())
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public List<GradeResponse.CourseGradeSummary> getStudentCourseGrades(Long studentId) {
+        // Get all active enrollments for the student
+        List<Enrollment> enrollments = enrollmentRepository.findByStudentIdAndActiveTrue(studentId);
+        
+        return enrollments.stream()
+                .map(enrollment -> getStudentCourseGradeSummary(studentId, enrollment.getCourse().getId()))
+                .toList();
     }
 
     private GradeResponse.GradeComponentResponse mapComponentToResponse(GradeComponent component) {

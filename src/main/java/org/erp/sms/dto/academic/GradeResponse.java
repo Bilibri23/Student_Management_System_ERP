@@ -96,4 +96,16 @@ public class GradeResponse {
             private Integer semesterCredits;
         }
     }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class StudentResultsSummary {
+        private String enrollmentNumber;
+        private String studentName;
+        private List<CourseGradeSummary> courses;
+        private Integer totalCredits;
+        private Double cgpa;
+    }
 }
