@@ -21,6 +21,27 @@ public class EnrollmentController {
 
     private final EnrollmentService enrollmentService;
 
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_STAFF', 'STUDENT')")
+    public ResponseEntity<ApiResponse<PageResponse<EnrollmentResponse>>> getAllEnrollments(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) Long studentId,
+            @RequestParam(required = false) Long courseId) {
+        PageResponse<EnrollmentResponse> enrollments;
+        
+        if (studentId != null) {
+            enrollments = enrollmentService.getStudentEnrollmentsPaged(studentId, page, size);
+        } else if (courseId != null) {
+            enrollments = enrollmentService.getCourseEnrollmentsPaged(courseId, page, size);
+        } else {
+            // For staff without filters, return empty - should use specific endpoints
+            enrollments = new PageResponse<>(List.of(), page, size, 0, 0, true, true);
+        }
+        
+        return ResponseEntity.ok(ApiResponse.success(enrollments));
+    }
+
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_STAFF', 'STUDENT')")
     public ResponseEntity<ApiResponse<EnrollmentResponse>> enrollStudent(@Valid @RequestBody EnrollmentRequest request) {

@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Configuration;
 public class ApplicationConfig {
     private String name;
     private String baseUrl;
+    private String frontendUrl;
     private String emailFrom;
     private Security security = new Security();
     private Pagination pagination = new Pagination();

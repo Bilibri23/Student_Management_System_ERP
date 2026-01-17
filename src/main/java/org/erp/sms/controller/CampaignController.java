@@ -22,6 +22,22 @@ public class CampaignController {
 
     private final CampaignService campaignService;
 
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_STAFF', 'HR_OFFICER')")
+    public ResponseEntity<ApiResponse<PageResponse<CampaignResponse>>> getAllCampaigns(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) CampaignStatus status) {
+        if (status != null) {
+            PageResponse<CampaignResponse> campaigns = campaignService.getCampaignsByStatus(status, page, size);
+            return ResponseEntity.ok(ApiResponse.success(campaigns));
+        } else {
+            // For now, return ACTIVE campaigns as default - can be enhanced later
+            PageResponse<CampaignResponse> campaigns = campaignService.getCampaignsByStatus(CampaignStatus.ACTIVE, page, size);
+            return ResponseEntity.ok(ApiResponse.success(campaigns));
+        }
+    }
+
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_STAFF', 'HR_OFFICER')")
     public ResponseEntity<ApiResponse<CampaignResponse>> createCampaign(@Valid @RequestBody CampaignRequest request) {

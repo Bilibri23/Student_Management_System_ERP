@@ -51,5 +51,13 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     long countByStatus(@Param("status") InvoiceStatus status);
     
     boolean existsByInvoiceNumber(String invoiceNumber);
+    
+    @Query("SELECT i FROM Invoice i WHERE " +
+           "LOWER(i.invoiceNumber) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(i.student.username) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(i.student.firstName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(i.student.lastName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(CONCAT(i.student.firstName, ' ', i.student.lastName)) LIKE LOWER(CONCAT('%', :query, '%'))")
+    Page<Invoice> searchInvoices(@Param("query") String query, Pageable pageable);
 }
 

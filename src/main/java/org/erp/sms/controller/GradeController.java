@@ -24,6 +24,25 @@ public class GradeController {
     private final GradeService gradeService;
     private final PdfGenerationService pdfGenerationService;
 
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_STAFF', 'STUDENT')")
+    public ResponseEntity<ApiResponse<List<GradeResponse>>> getAllGrades(
+            @RequestParam(required = false) Long studentId,
+            @RequestParam(required = false) Long courseId) {
+        List<GradeResponse> grades;
+        
+        if (studentId != null) {
+            grades = gradeService.getStudentGrades(studentId);
+        } else if (courseId != null) {
+            grades = gradeService.getCourseGrades(courseId);
+        } else {
+            // For staff, return empty or implement getAllGrades
+            grades = List.of();
+        }
+        
+        return ResponseEntity.ok(ApiResponse.success(grades));
+    }
+
     @PostMapping("/components")
     @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<GradeResponse.GradeComponentResponse>> createGradeComponent(

@@ -157,27 +157,35 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + request.getEmail()));
 
-        String resetToken = UUID.randomUUID().toString();
-        user.setPasswordResetToken(resetToken);
-        user.setPasswordResetTokenExpiry(LocalDateTime.now().plusHours(1));
+        // Generate 6-digit OTP
+        String otp = String.format("%06d", new java.util.Random().nextInt(999999));
+        user.setPasswordResetOtp(otp);
+        user.setPasswordResetOtpExpiry(LocalDateTime.now().plusMinutes(10)); // OTP valid for 10 minutes
         userRepository.save(user);
 
-        // Send password reset email
-        emailService.sendPasswordResetEmail(user.getEmail(), resetToken);
+        // Send password reset email with OTP code
+        emailService.sendPasswordResetEmail(user.getEmail(), otp);
 
-        log.info("Password reset email sent to: {}", user.getEmail());
+        log.info("Password reset OTP sent to: {}", user.getEmail());
     }
 
     @Transactional
     public void resetPassword(ResetPasswordRequest request) {
-        User user = userRepository.findByPasswordResetToken(request.getToken())
-                .orElseThrow(() -> new BadRequestException("Invalid password reset token"));
+        User user = userRepository.findByPasswordResetOtp(request.getToken())
+                .orElseThrow(() -> new BadRequestException("Invalid or expired OTP code"));
 
-        if (user.getPasswordResetTokenExpiry().isBefore(LocalDateTime.now())) {
-            throw new BadRequestException("Password reset token has expired");
+        if (user.getPasswordResetOtpExpiry() == null || user.getPasswordResetOtpExpiry().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("OTP code has expired. Please request a new one.");
+        }
+
+        if (!user.getPasswordResetOtp().equals(request.getToken())) {
+            throw new BadRequestException("Invalid OTP code");
         }
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setPasswordResetOtp(null);
+        user.setPasswordResetOtpExpiry(null);
+        // Clear old token fields for backward compatibility
         user.setPasswordResetToken(null);
         user.setPasswordResetTokenExpiry(null);
         userRepository.save(user);

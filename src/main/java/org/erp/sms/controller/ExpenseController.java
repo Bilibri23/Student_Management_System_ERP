@@ -24,6 +24,15 @@ public class ExpenseController {
 
     private final ExpenseService expenseService;
 
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE_STAFF')")
+    public ResponseEntity<ApiResponse<PageResponse<ExpenseResponse>>> getAllExpenses(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        PageResponse<ExpenseResponse> expenses = expenseService.getAllExpenses(page, size);
+        return ResponseEntity.ok(ApiResponse.success(expenses));
+    }
+
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE_STAFF', 'HR_OFFICER')")
     public ResponseEntity<ApiResponse<ExpenseResponse>> createExpense(

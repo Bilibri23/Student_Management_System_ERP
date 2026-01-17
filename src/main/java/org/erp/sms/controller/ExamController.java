@@ -27,6 +27,27 @@ public class ExamController {
     private final ExamService examService;
     private final PdfGenerationService pdfGenerationService;
 
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_STAFF', 'STUDENT')")
+    public ResponseEntity<ApiResponse<List<ExamResponse>>> getAllExams(
+            @RequestParam(required = false) Long studentId,
+            @RequestParam(required = false) Long courseId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        List<ExamResponse> exams;
+        
+        if (studentId != null) {
+            exams = examService.getStudentExams(studentId);
+        } else if (courseId != null) {
+            exams = examService.getExamsByCourse(courseId);
+        } else {
+            // For staff, return empty or implement getAllExams
+            exams = List.of();
+        }
+        
+        return ResponseEntity.ok(ApiResponse.success(exams));
+    }
+
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<ExamResponse>> createExam(@Valid @RequestBody ExamRequest request) {

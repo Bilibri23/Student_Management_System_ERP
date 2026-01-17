@@ -29,6 +29,39 @@ public class InvoiceController {
     private final InvoiceRepository invoiceRepository;
     private final PdfGenerationService pdfGenerationService;
 
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE_STAFF', 'STUDENT')")
+    public ResponseEntity<ApiResponse<PageResponse<InvoiceResponse>>> getAllInvoices(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) InvoiceStatus status,
+            @RequestParam(required = false) Long studentId) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<org.erp.sms.entity.Invoice> invoicePage;
+        
+        if (studentId != null) {
+            invoicePage = invoiceRepository.findByStudentId(studentId, pageable);
+        } else if (status != null) {
+            invoicePage = invoiceRepository.findByStatus(status, pageable);
+        } else {
+            invoicePage = invoiceRepository.findAll(pageable);
+        }
+        
+        List<InvoiceResponse> responses = invoicePage.getContent().stream()
+                .map(feeService::mapToInvoiceResponse)
+                .toList();
+        PageResponse<InvoiceResponse> pageResponse = new PageResponse<>(
+                responses,
+                invoicePage.getNumber(),
+                invoicePage.getSize(),
+                invoicePage.getTotalElements(),
+                invoicePage.getTotalPages(),
+                invoicePage.isLast(),
+                invoicePage.isFirst()
+        );
+        return ResponseEntity.ok(ApiResponse.success(pageResponse));
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE_STAFF', 'STUDENT')")
     public ResponseEntity<ApiResponse<InvoiceResponse>> getInvoiceById(@PathVariable Long id) {

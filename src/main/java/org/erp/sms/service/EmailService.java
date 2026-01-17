@@ -17,14 +17,19 @@ public class EmailService {
 
     public void sendVerificationEmail(String to, String token) {
         try {
-            String verificationUrl = applicationConfig.getBaseUrl() + "/api/auth/verify-email/" + token;
+            // Use frontend URL for email verification link
+            String frontendUrl = applicationConfig.getFrontendUrl() != null 
+                    ? applicationConfig.getFrontendUrl() 
+                    : applicationConfig.getBaseUrl().replace(":8080", ":3000");
+            String verificationUrl = frontendUrl + "/verify-email/" + token;
 
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(applicationConfig.getEmailFrom());
             message.setTo(to);
             message.setSubject("Email Verification - " + applicationConfig.getName());
             message.setText("Please click the following link to verify your email:\n\n" + verificationUrl +
-                    "\n\nThis link will expire in 24 hours.");
+                    "\n\nThis link will expire in 24 hours.\n\n" +
+                    "Or copy and paste this URL in your browser:\n" + verificationUrl);
 
             mailSender.send(message);
             log.info("Verification email sent to: {}", to);
@@ -33,20 +38,19 @@ public class EmailService {
         }
     }
 
-    public void sendPasswordResetEmail(String to, String token) {
+    public void sendPasswordResetEmail(String to, String otp) {
         try {
-            String resetUrl = applicationConfig.getBaseUrl() + "/reset-password?token=" + token;
-
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(applicationConfig.getEmailFrom());
             message.setTo(to);
-            message.setSubject("Password Reset - " + applicationConfig.getName());
-            message.setText("You have requested to reset your password. Please click the following link:\n\n" +
-                    resetUrl + "\n\nThis link will expire in 1 hour.\n\n" +
+            message.setSubject("Password Reset OTP - " + applicationConfig.getName());
+            message.setText("You have requested to reset your password.\n\n" +
+                    "Your OTP code is: " + otp + "\n\n" +
+                    "Please enter this code in the reset password form. This code will expire in 10 minutes.\n\n" +
                     "If you did not request this, please ignore this email.");
 
             mailSender.send(message);
-            log.info("Password reset email sent to: {}", to);
+            log.info("Password reset OTP sent to: {}", to);
         } catch (Exception e) {
             log.error("Failed to send password reset email to: {}", to, e);
         }

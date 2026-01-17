@@ -148,6 +148,13 @@ public class ExpenseService {
         return mapToPageResponse(expensePage);
     }
 
+    @Transactional(readOnly = true)
+    public PageResponse<ExpenseResponse> getAllExpenses(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Expense> expensePage = expenseRepository.findAll(pageable);
+        return mapToPageResponse(expensePage);
+    }
+
     @Transactional
     public ExpenseResponse updateExpense(Long id, ExpenseRequest request) {
         Expense expense = expenseRepository.findById(id)

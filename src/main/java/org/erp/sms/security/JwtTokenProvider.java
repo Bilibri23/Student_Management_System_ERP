@@ -21,7 +21,7 @@ public class JwtTokenProvider {
 
     public JwtTokenProvider(JwtConfig jwtConfig) {
         this.jwtConfig = jwtConfig;
-        this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtConfig.getSecret()));
+        this.key = Keys.hmacShaKeyFor(Decoders.BASE64URL.decode(jwtConfig.getSecret()));
     }
 
     public String generateToken(Authentication authentication) {

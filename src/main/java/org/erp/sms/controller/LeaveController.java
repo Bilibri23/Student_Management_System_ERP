@@ -25,6 +25,38 @@ public class LeaveController {
 
     private final LeaveService leaveService;
 
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_STAFF', 'FINANCE_STAFF', 'HR_OFFICER')")
+    public ResponseEntity<ApiResponse<PageResponse<LeaveResponse>>> getAllLeaves(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) Long employeeId,
+            @RequestParam(required = false) org.erp.sms.common.enums.LeaveStatus status,
+            Authentication authentication) {
+        PageResponse<LeaveResponse> leaves;
+        
+        // If employeeId is provided, get that employee's leaves
+        if (employeeId != null) {
+            leaves = leaveService.getEmployeeLeavesPaginated(employeeId, page, size);
+        } 
+        // If status is PENDING and no employeeId, get pending leaves (for ADMIN/HR_OFFICER to review)
+        else if (status != null && status == org.erp.sms.common.enums.LeaveStatus.PENDING) {
+            leaves = leaveService.getPendingLeaves(page, size);
+        } 
+        // If no employeeId and no status filter, get current user's leaves (for regular staff)
+        else {
+            Long currentUserId = getUserIdFromAuthentication(authentication);
+            if (currentUserId != null) {
+                leaves = leaveService.getEmployeeLeavesPaginated(currentUserId, page, size);
+            } else {
+                // Fallback to pending leaves if unable to get current user
+                leaves = leaveService.getPendingLeaves(page, size);
+            }
+        }
+        
+        return ResponseEntity.ok(ApiResponse.success(leaves));
+    }
+
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_STAFF', 'FINANCE_STAFF', 'HR_OFFICER')")
     public ResponseEntity<ApiResponse<LeaveResponse>> requestLeave(@Valid @RequestBody LeaveRequest request) {

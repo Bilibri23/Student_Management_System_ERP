@@ -8,14 +8,10 @@ import org.erp.sms.dto.finance.FeeStructureRequest;
 import org.erp.sms.dto.finance.FeeStructureResponse;
 import org.erp.sms.dto.finance.InvoiceRequest;
 import org.erp.sms.dto.finance.InvoiceResponse;
-import org.erp.sms.entity.User;
-import org.erp.sms.security.CustomUserDetailsService;
 import org.erp.sms.service.FeeService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,7 +22,6 @@ import java.util.List;
 public class FeeController {
 
     private final FeeService feeService;
-    private final CustomUserDetailsService userDetailsService;
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE_STAFF')")

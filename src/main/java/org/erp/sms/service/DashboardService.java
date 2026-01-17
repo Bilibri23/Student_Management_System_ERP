@@ -142,10 +142,12 @@ public class DashboardService {
         stats.put("pendingInvoices", invoiceRepository.countByStatus(org.erp.sms.common.enums.InvoiceStatus.PENDING));
         stats.put("overdueInvoices", invoiceRepository.countByStatus(org.erp.sms.common.enums.InvoiceStatus.OVERDUE));
         stats.put("pendingExpenses", expenseRepository.countByStatus(org.erp.sms.common.enums.ExpenseStatus.PENDING));
-        stats.put("totalPendingAmount", invoiceRepository.calculateTotalAmountByStatusAndDateRange(
+        
+        java.math.BigDecimal totalPendingAmount = invoiceRepository.calculateTotalAmountByStatusAndDateRange(
                 org.erp.sms.common.enums.InvoiceStatus.PENDING, 
                 LocalDate.now().withDayOfMonth(1), 
-                LocalDate.now()));
+                LocalDate.now());
+        stats.put("totalPendingAmount", totalPendingAmount != null ? totalPendingAmount : java.math.BigDecimal.ZERO);
         
         // Today's payments
         long todayPayments = paymentRepository.countByStatusAndDateRange(

@@ -56,5 +56,12 @@ public interface LeadRepository extends JpaRepository<Lead, Long> {
     boolean existsByEmail(String email);
     
     boolean existsByPhone(String phone);
+    
+    @Query("SELECT l FROM Lead l WHERE " +
+           "LOWER(l.firstName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(l.lastName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(l.email) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(l.phone) LIKE LOWER(CONCAT('%', :query, '%'))")
+    Page<Lead> searchLeads(@Param("query") String query, Pageable pageable);
 }
 

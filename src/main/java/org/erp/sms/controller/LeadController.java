@@ -22,6 +22,22 @@ public class LeadController {
 
     private final LeadService leadService;
 
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_STAFF', 'HR_OFFICER')")
+    public ResponseEntity<ApiResponse<PageResponse<LeadResponse>>> getAllLeads(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) LeadStatus status) {
+        if (status != null) {
+            PageResponse<LeadResponse> leads = leadService.getLeadsByStatus(status, page, size);
+            return ResponseEntity.ok(ApiResponse.success(leads));
+        } else {
+            // For now, return NEW status leads as default - can be enhanced later
+            PageResponse<LeadResponse> leads = leadService.getLeadsByStatus(LeadStatus.NEW, page, size);
+            return ResponseEntity.ok(ApiResponse.success(leads));
+        }
+    }
+
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_STAFF', 'HR_OFFICER')")
     public ResponseEntity<ApiResponse<LeadResponse>> createLead(@Valid @RequestBody LeadRequest request) {

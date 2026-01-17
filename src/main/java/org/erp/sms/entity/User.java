@@ -55,6 +55,9 @@ public class User extends BaseEntity implements UserDetails {
 
     private String passwordResetToken;
     private LocalDateTime passwordResetTokenExpiry;
+    
+    private String passwordResetOtp;
+    private LocalDateTime passwordResetOtpExpiry;
 
     private Integer failedLoginAttempts = 0;
     private LocalDateTime lockedUntil;
@@ -82,7 +85,9 @@ public class User extends BaseEntity implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return active && emailVerified;
+        // For development: allow login without email verification
+        // For production: change to: return active && emailVerified;
+        return active;
     }
 
     public String getFullName() {

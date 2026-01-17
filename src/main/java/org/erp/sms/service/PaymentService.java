@@ -148,6 +148,12 @@ public class PaymentService {
         return payments.stream().map(this::mapToResponse).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<PaymentResponse> getAllPayments() {
+        List<Payment> payments = paymentRepository.findAll();
+        return payments.stream().map(this::mapToResponse).collect(Collectors.toList());
+    }
+
     @Transactional
     public PaymentResponse refundPayment(Long paymentId, String refundReason) {
         Payment payment = paymentRepository.findById(paymentId)

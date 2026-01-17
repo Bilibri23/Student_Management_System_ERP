@@ -28,6 +28,37 @@ public class PaymentController {
     private final PaymentService paymentService;
     private final PdfGenerationService pdfGenerationService;
 
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE_STAFF', 'STUDENT')")
+    public ResponseEntity<ApiResponse<PageResponse<PaymentResponse>>> getAllPayments(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) Long studentId) {
+        PageResponse<PaymentResponse> payments;
+        if (studentId != null) {
+            payments = paymentService.getPaymentsByStudentPaginated(studentId, page, size);
+        } else {
+            // For admin/finance staff without studentId filter, get all payments
+            List<PaymentResponse> allPayments = paymentService.getAllPayments();
+            // Simple pagination in memory - not ideal but works for now
+            int start = page * size;
+            int end = Math.min(start + size, allPayments.size());
+            List<PaymentResponse> pageContent = allPayments.size() > start 
+                ? allPayments.subList(start, end) 
+                : List.of();
+            payments = new PageResponse<>(
+                pageContent,
+                page,
+                size,
+                allPayments.size(),
+                (int) Math.ceil((double) allPayments.size() / size),
+                end >= allPayments.size(),
+                page == 0
+            );
+        }
+        return ResponseEntity.ok(ApiResponse.success(payments));
+    }
+
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE_STAFF', 'STUDENT')")
     public ResponseEntity<ApiResponse<PaymentResponse>> processPayment(

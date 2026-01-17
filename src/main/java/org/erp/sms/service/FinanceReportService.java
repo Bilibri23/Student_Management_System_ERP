@@ -33,10 +33,15 @@ public class FinanceReportService {
     @Transactional(readOnly = true)
     public RevenueReport getRevenueReport(LocalDate startDate, LocalDate endDate) {
         // Calculate total invoices issued
-        BigDecimal totalInvoiced = invoiceRepository.calculateTotalAmountByStatusAndDateRange(
-                InvoiceStatus.PAID, startDate, endDate)
-                .add(invoiceRepository.calculateTotalAmountByStatusAndDateRange(
-                        InvoiceStatus.PARTIALLY_PAID, startDate, endDate));
+        BigDecimal paidAmount = invoiceRepository.calculateTotalAmountByStatusAndDateRange(
+                InvoiceStatus.PAID, startDate, endDate);
+        if (paidAmount == null) paidAmount = BigDecimal.ZERO;
+        
+        BigDecimal partiallyPaidAmount = invoiceRepository.calculateTotalAmountByStatusAndDateRange(
+                InvoiceStatus.PARTIALLY_PAID, startDate, endDate);
+        if (partiallyPaidAmount == null) partiallyPaidAmount = BigDecimal.ZERO;
+        
+        BigDecimal totalInvoiced = paidAmount.add(partiallyPaidAmount);
 
         // Calculate total payments received
         BigDecimal totalPaid = paymentRepository.calculateTotalPaidAmount(startDate, endDate);
