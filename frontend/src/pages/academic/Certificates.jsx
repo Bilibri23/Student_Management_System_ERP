@@ -13,6 +13,7 @@ import {
 } from '@mui/material'
 import { Add as AddIcon, Download as DownloadIcon } from '@mui/icons-material'
 import { academicApi } from '../../api/academic'
+import { userApi } from '../../api/user'
 import DataTable from '../../components/common/DataTable'
 import FormDialog from '../../components/common/FormDialog'
 import { useAuthStore } from '../../store/authStore'
@@ -39,6 +40,15 @@ const Certificates = () => {
       return academicApi.getCertificates(params).then(res => res.data.data)
     },
   })
+
+  // Fetch students for dropdown (staff only)
+  const { data: studentsData } = useQuery({
+    queryKey: ['students-list'],
+    queryFn: () => userApi.getStudents({ page: 0, size: 100 }).then(res => res.data.data),
+    enabled: user?.role !== 'STUDENT',
+  })
+
+  const students = studentsData?.content || []
 
   const createMutation = useMutation({
     mutationFn: (data) => academicApi.requestCertificate(data),
@@ -183,12 +193,19 @@ const Certificates = () => {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Student ID"
-                type="number"
+                select
+                label="Student"
                 value={formData.studentId}
                 onChange={(e) => setFormData({ ...formData, studentId: e.target.value })}
                 required
-              />
+              >
+                <MenuItem value=""><em>Select a student</em></MenuItem>
+                {students.map((student) => (
+                  <MenuItem key={student.id} value={student.id}>
+                    {student.firstName} {student.lastName} ({student.email})
+                  </MenuItem>
+                ))}
+              </TextField>
             </Grid>
           )}
           <Grid item xs={12}>

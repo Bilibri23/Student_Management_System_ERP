@@ -18,6 +18,7 @@ import FormDialog from '../../components/common/FormDialog'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
 import { useAuthStore } from '../../store/authStore'
 
+
 const Exams = () => {
   const { user } = useAuthStore()
   const queryClient = useQueryClient()
@@ -43,6 +44,15 @@ const Exams = () => {
     queryFn: () =>
       academicApi.getExams({ page, size: pageSize }).then(res => res.data.data),
   })
+
+  // Fetch courses for dropdown
+  const { data: coursesData } = useQuery({
+    queryKey: ['courses-list'],
+    queryFn: () => academicApi.getCourses({ page: 0, size: 100 }).then(res => res.data.data),
+    enabled: user?.role !== 'STUDENT',
+  })
+
+  const courses = coursesData?.content || []
 
   const createMutation = useMutation({
     mutationFn: (data) => academicApi.createExam(data),
@@ -224,12 +234,19 @@ const Exams = () => {
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label="Course ID"
-              type="number"
+              select
+              label="Course"
               value={formData.courseId}
               onChange={(e) => setFormData({ ...formData, courseId: e.target.value })}
               required
-            />
+            >
+              <MenuItem value=""><em>Select a course</em></MenuItem>
+              {courses.map((course) => (
+                <MenuItem key={course.id} value={course.id}>
+                  {course.courseCode} - {course.courseName}
+                </MenuItem>
+              ))}
+            </TextField>
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField

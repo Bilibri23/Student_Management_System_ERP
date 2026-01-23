@@ -13,6 +13,7 @@ import {
 } from '@mui/material'
 import { Add as AddIcon } from '@mui/icons-material'
 import { academicApi } from '../../api/academic'
+import { userApi } from '../../api/user'
 import DataTable from '../../components/common/DataTable'
 import FormDialog from '../../components/common/FormDialog'
 import { useAuthStore } from '../../store/authStore'
@@ -41,6 +42,23 @@ const Attendance = () => {
       return academicApi.getAttendance(params).then(res => res.data.data)
     },
   })
+
+  // Fetch students for dropdown
+  const { data: studentsData } = useQuery({
+    queryKey: ['students-list'],
+    queryFn: () => userApi.getStudents({ page: 0, size: 100 }).then(res => res.data.data),
+    enabled: user?.role !== 'STUDENT',
+  })
+
+  // Fetch courses for dropdown
+  const { data: coursesData } = useQuery({
+    queryKey: ['courses-list'],
+    queryFn: () => academicApi.getCourses({ page: 0, size: 100 }).then(res => res.data.data),
+    enabled: user?.role !== 'STUDENT',
+  })
+
+  const students = studentsData?.content || []
+  const courses = coursesData?.content || []
 
   const createMutation = useMutation({
     mutationFn: (data) => academicApi.markAttendance(data),
@@ -159,22 +177,36 @@ const Attendance = () => {
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label="Course ID"
-              type="number"
+              select
+              label="Course"
               value={formData.courseId}
               onChange={(e) => setFormData({ ...formData, courseId: e.target.value })}
               required
-            />
+            >
+              <MenuItem value=""><em>Select a course</em></MenuItem>
+              {courses.map((course) => (
+                <MenuItem key={course.id} value={course.id}>
+                  {course.courseCode} - {course.courseName}
+                </MenuItem>
+              ))}
+            </TextField>
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label="Student ID"
-              type="number"
+              select
+              label="Student"
               value={formData.studentId}
               onChange={(e) => setFormData({ ...formData, studentId: e.target.value })}
               required
-            />
+            >
+              <MenuItem value=""><em>Select a student</em></MenuItem>
+              {students.map((student) => (
+                <MenuItem key={student.id} value={student.id}>
+                  {student.firstName} {student.lastName}
+                </MenuItem>
+              ))}
+            </TextField>
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField

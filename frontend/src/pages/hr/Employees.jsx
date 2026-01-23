@@ -12,12 +12,22 @@ import {
   Grid,
   Switch,
   FormControlLabel,
+  Card,
+  CardContent,
+  Avatar,
+  Skeleton,
 } from '@mui/material'
-import { Add as AddIcon } from '@mui/icons-material'
+import {
+  Add as AddIcon,
+  People as PeopleIcon,
+  PersonOff as InactiveIcon,
+  Badge as BadgeIcon,
+} from '@mui/icons-material'
 import { hrApi } from '../../api/hr'
 import DataTable from '../../components/common/DataTable'
 import FormDialog from '../../components/common/FormDialog'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
+import PageHeader from '../../components/common/PageHeader'
 
 const Employees = () => {
   const queryClient = useQueryClient()
@@ -148,34 +158,89 @@ const Employees = () => {
 
   const rows = data?.content || []
 
+  const statsCards = [
+    {
+      title: 'Total Employees',
+      value: data?.totalElements || 0,
+      icon: <PeopleIcon />,
+      color: '#6366F1',
+    },
+    {
+      title: 'Active',
+      value: rows.filter(e => e.active).length,
+      icon: <BadgeIcon />,
+      color: '#10B981',
+    },
+    {
+      title: 'Inactive',
+      value: rows.filter(e => !e.active).length,
+      icon: <InactiveIcon />,
+      color: '#EF4444',
+    },
+  ]
+
   if (isLoading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
+      <Box>
+        <Skeleton variant="rounded" height={80} sx={{ mb: 3, borderRadius: 3 }} />
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          {[1, 2, 3].map((i) => (
+            <Grid item xs={12} sm={4} key={i}>
+              <Skeleton variant="rounded" height={100} sx={{ borderRadius: 3 }} />
+            </Grid>
+          ))}
+        </Grid>
+        <Skeleton variant="rounded" height={400} sx={{ borderRadius: 3 }} />
       </Box>
     )
   }
 
   if (error) {
-    return <Alert severity="error">Failed to load employees</Alert>
+    return <Alert severity="error" sx={{ borderRadius: 3 }}>Failed to load employees</Alert>
   }
 
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4">Employees</Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => {
-            setSelectedEmployee(null)
-            resetForm()
-            setOpenDialog(true)
-          }}
-        >
-          Add Employee
-        </Button>
-      </Box>
+      <PageHeader
+        title="Employees"
+        subtitle="Manage staff and employee records"
+        action={() => { setSelectedEmployee(null); resetForm(); setOpenDialog(true) }}
+        actionLabel="Add Employee"
+        badge={`${data?.totalElements || 0} total`}
+      />
+
+      {/* Stats Cards */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        {statsCards.map((stat, index) => (
+          <Grid item xs={12} sm={4} key={index}>
+            <Card
+              sx={{
+                background: `linear-gradient(135deg, ${stat.color}10 0%, ${stat.color}05 100%)`,
+                border: `1px solid ${stat.color}20`,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: `0 8px 24px ${stat.color}20`,
+                },
+              }}
+            >
+              <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Avatar sx={{ width: 48, height: 48, bgcolor: `${stat.color}20`, color: stat.color }}>
+                  {stat.icon}
+                </Avatar>
+                <Box>
+                  <Typography variant="h4" fontWeight={700} color={stat.color}>
+                    {stat.value}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {stat.title}
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
 
       <DataTable
         columns={columns}

@@ -10,12 +10,23 @@ import {
   TextField,
   MenuItem,
   Grid,
+  Card,
+  CardContent,
+  Avatar,
+  Skeleton,
 } from '@mui/material'
-import { Add as AddIcon } from '@mui/icons-material'
+import {
+  Add as AddIcon,
+  Campaign as CampaignIcon,
+  PlayArrow as ActiveIcon,
+  Schedule as ScheduledIcon,
+  CheckCircle as CompletedIcon,
+} from '@mui/icons-material'
 import { marketingApi } from '../../api/marketing'
 import DataTable from '../../components/common/DataTable'
 import FormDialog from '../../components/common/FormDialog'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
+import PageHeader from '../../components/common/PageHeader'
 import { useAuthStore } from '../../store/authStore'
 
 const Campaigns = () => {
@@ -198,34 +209,68 @@ const Campaigns = () => {
 
   const rows = data?.content || []
 
+  const statsCards = [
+    { title: 'Total Campaigns', value: data?.totalElements || 0, icon: <CampaignIcon />, color: '#6366F1' },
+    { title: 'Active', value: rows.filter(c => c.status === 'ACTIVE').length, icon: <ActiveIcon />, color: '#10B981' },
+    { title: 'Scheduled', value: rows.filter(c => c.status === 'SCHEDULED').length, icon: <ScheduledIcon />, color: '#F59E0B' },
+    { title: 'Completed', value: rows.filter(c => c.status === 'COMPLETED').length, icon: <CompletedIcon />, color: '#3B82F6' },
+  ]
+
   if (isLoading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
+      <Box>
+        <Skeleton variant="rounded" height={80} sx={{ mb: 3, borderRadius: 3 }} />
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          {[1, 2, 3, 4].map((i) => (
+            <Grid item xs={6} sm={3} key={i}>
+              <Skeleton variant="rounded" height={90} sx={{ borderRadius: 3 }} />
+            </Grid>
+          ))}
+        </Grid>
+        <Skeleton variant="rounded" height={400} sx={{ borderRadius: 3 }} />
       </Box>
     )
   }
 
   if (error) {
-    return <Alert severity="error">Failed to load campaigns</Alert>
+    return <Alert severity="error" sx={{ borderRadius: 3 }}>Failed to load campaigns</Alert>
   }
 
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4">Campaigns</Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => {
-            setSelectedCampaign(null)
-            resetForm()
-            setOpenDialog(true)
-          }}
-        >
-          Add Campaign
-        </Button>
-      </Box>
+      <PageHeader
+        title="Campaigns"
+        subtitle="Manage marketing campaigns"
+        action={() => { setSelectedCampaign(null); resetForm(); setOpenDialog(true) }}
+        actionLabel="Add Campaign"
+        badge={`${data?.totalElements || 0} total`}
+      />
+
+      {/* Stats Cards */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        {statsCards.map((stat, index) => (
+          <Grid item xs={6} sm={3} key={index}>
+            <Card
+              sx={{
+                background: `linear-gradient(135deg, ${stat.color}10 0%, ${stat.color}05 100%)`,
+                border: `1px solid ${stat.color}20`,
+                transition: 'all 0.3s ease',
+                '&:hover': { transform: 'translateY(-2px)', boxShadow: `0 8px 24px ${stat.color}20` },
+              }}
+            >
+              <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2, py: 2 }}>
+                <Avatar sx={{ width: 40, height: 40, bgcolor: `${stat.color}20`, color: stat.color }}>
+                  {stat.icon}
+                </Avatar>
+                <Box>
+                  <Typography variant="h5" fontWeight={700} color={stat.color}>{stat.value}</Typography>
+                  <Typography variant="caption" color="text.secondary">{stat.title}</Typography>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
 
       <DataTable
         columns={columns}

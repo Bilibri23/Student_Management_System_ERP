@@ -84,7 +84,13 @@ const NotificationBell = () => {
 
   return (
     <>
-      <IconButton color="inherit" onClick={handleClick}>
+      <IconButton 
+        onClick={handleClick}
+        sx={{ 
+          color: '#334155',
+          '&:hover': { bgcolor: 'rgba(99, 102, 241, 0.1)' }
+        }}
+      >
         <Badge badgeContent={unreadCount} color="error">
           <NotificationsIcon />
         </Badge>

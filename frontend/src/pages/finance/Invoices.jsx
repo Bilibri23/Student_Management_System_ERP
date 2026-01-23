@@ -13,6 +13,7 @@ import {
 } from '@mui/material'
 import { Add as AddIcon, Download as DownloadIcon } from '@mui/icons-material'
 import { financeApi } from '../../api/finance'
+import { userApi } from '../../api/user'
 import DataTable from '../../components/common/DataTable'
 import FormDialog from '../../components/common/FormDialog'
 import { useAuthStore } from '../../store/authStore'
@@ -39,6 +40,15 @@ const Invoices = () => {
       return financeApi.getInvoices(params).then(res => res.data.data)
     },
   })
+
+  // Fetch students for dropdown
+  const { data: studentsData } = useQuery({
+    queryKey: ['students-list'],
+    queryFn: () => userApi.getStudents({ page: 0, size: 100 }).then(res => res.data.data),
+    enabled: user?.role !== 'STUDENT',
+  })
+
+  const students = studentsData?.content || []
 
   const downloadMutation = useMutation({
     mutationFn: ({ invoiceNumber, enrollmentNumber }) =>
@@ -187,10 +197,17 @@ const Invoices = () => {
           <Grid item xs={12}>
             <TextField
               fullWidth
-              label="Student ID"
-              type="number"
+              select
+              label="Student"
               required
-            />
+            >
+              <MenuItem value=""><em>Select a student</em></MenuItem>
+              {students.map((student) => (
+                <MenuItem key={student.id} value={student.id}>
+                  {student.firstName} {student.lastName} ({student.email})
+                </MenuItem>
+              ))}
+            </TextField>
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField fullWidth label="Program" required />

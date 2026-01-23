@@ -29,13 +29,17 @@ public class CertificateController {
     private final PdfGenerationService pdfGenerationService;
 
     @PostMapping
-    @PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_STAFF', 'STUDENT')")
     public ResponseEntity<ApiResponse<CertificateResponse>> requestCertificate(
             @Valid @RequestBody CertificateRequest request,
             Authentication authentication) {
-        // Override studentId from authenticated user for security
-        Long studentId = getUserIdFromAuthentication(authentication);
-        request.setStudentId(studentId);
+        // For students, override studentId from authenticated user for security
+        // For admin/staff, use the provided studentId
+        Long authenticatedUserId = getUserIdFromAuthentication(authentication);
+        if (authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_STUDENT"))) {
+            request.setStudentId(authenticatedUserId);
+        }
         
         CertificateResponse certificate = certificateService.requestCertificate(request);
         return new ResponseEntity<>(ApiResponse.success("Certificate request submitted successfully", certificate), HttpStatus.CREATED);

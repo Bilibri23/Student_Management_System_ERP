@@ -17,6 +17,7 @@ import DataTable from '../../components/common/DataTable'
 import FormDialog from '../../components/common/FormDialog'
 import { useAuthStore } from '../../store/authStore'
 
+
 const Payments = () => {
   const { user } = useAuthStore()
   const queryClient = useQueryClient()
@@ -42,6 +43,15 @@ const Payments = () => {
       return financeApi.getPayments(params).then(res => res.data.data)
     },
   })
+
+  // Fetch invoices for dropdown
+  const { data: invoicesData } = useQuery({
+    queryKey: ['invoices-for-payment'],
+    queryFn: () => financeApi.getInvoices({ page: 0, size: 100, status: 'PENDING' }).then(res => res.data.data),
+    enabled: user?.role !== 'STUDENT',
+  })
+
+  const invoices = invoicesData?.content || []
 
   const paymentMutation = useMutation({
     mutationFn: (data) => financeApi.processPayment(data),
@@ -191,12 +201,20 @@ const Payments = () => {
           <Grid item xs={12}>
             <TextField
               fullWidth
-              label="Invoice ID"
-              type="number"
+              select
+              label="Invoice"
               value={formData.invoiceId}
               onChange={(e) => setFormData({ ...formData, invoiceId: e.target.value })}
               required
-            />
+              helperText={invoices.length === 0 ? "No pending invoices available" : ""}
+            >
+              <MenuItem value=""><em>Select an invoice</em></MenuItem>
+              {invoices.map((invoice) => (
+                <MenuItem key={invoice.id} value={invoice.id}>
+                  {invoice.invoiceNumber} - {invoice.studentName} (${invoice.totalAmount})
+                </MenuItem>
+              ))}
+            </TextField>
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField

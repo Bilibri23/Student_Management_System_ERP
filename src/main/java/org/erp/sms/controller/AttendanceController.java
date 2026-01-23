@@ -37,8 +37,8 @@ public class AttendanceController {
         } else if (courseId != null) {
             attendance = attendanceService.getCourseAttendance(courseId, page, size);
         } else {
-            // Return empty for now - in real app, would have getAllAttendancePaginated
-            attendance = new PageResponse<>(List.of(), page, size, 0, 0, true, true);
+            // For admin/staff without filters, return all attendance
+            attendance = attendanceService.getAllAttendancePaged(page, size);
         }
         
         return ResponseEntity.ok(ApiResponse.success(attendance));

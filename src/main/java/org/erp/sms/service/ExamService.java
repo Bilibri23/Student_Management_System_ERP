@@ -144,6 +144,13 @@ public class ExamService {
         return exams.stream().map(this::mapToResponse).toList();
     }
 
+    @Transactional(readOnly = true)
+    public PageResponse<ExamResponse> getAllExamsPaged(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Exam> examPage = examRepository.findAll(pageable);
+        return mapToPageResponse(examPage);
+    }
+
     @Transactional
     public void deleteExam(Long id) {
         Exam exam = examRepository.findById(id)

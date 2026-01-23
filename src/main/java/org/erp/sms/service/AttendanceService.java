@@ -145,6 +145,13 @@ public class AttendanceService {
     }
 
     @Transactional(readOnly = true)
+    public PageResponse<AttendanceResponse> getAllAttendancePaged(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Attendance> attendancePage = attendanceRepository.findAll(pageable);
+        return mapToPageResponse(attendancePage);
+    }
+
+    @Transactional(readOnly = true)
     public List<AttendanceResponse> getAttendanceByDateRange(Long courseId, LocalDate startDate, LocalDate endDate) {
         List<Attendance> attendanceList = attendanceRepository.findByCourseIdAndDateRange(courseId, startDate, endDate);
         return attendanceList.stream().map(this::mapToResponse).toList();

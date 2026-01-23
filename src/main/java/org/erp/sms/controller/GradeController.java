@@ -36,8 +36,8 @@ public class GradeController {
         } else if (courseId != null) {
             grades = gradeService.getCourseGrades(courseId);
         } else {
-            // For staff, return empty or implement getAllGrades
-            grades = List.of();
+            // For admin/staff without filters, return all grades
+            grades = gradeService.getAllGrades();
         }
         
         return ResponseEntity.ok(ApiResponse.success(grades));

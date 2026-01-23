@@ -18,9 +18,32 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Avatar,
+  Chip,
+  Skeleton,
 } from '@mui/material'
-import { Download as DownloadIcon } from '@mui/icons-material'
+import {
+  Download as DownloadIcon,
+  TrendingUp as TrendingUpIcon,
+  TrendingDown as TrendingDownIcon,
+  AccountBalance as AccountBalanceIcon,
+  Receipt as ReceiptIcon,
+  Assessment as AssessmentIcon,
+} from '@mui/icons-material'
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  Legend,
+} from 'recharts'
 import { financeApi } from '../../api/finance'
+import PageHeader from '../../components/common/PageHeader'
 
 const FinanceReports = () => {
   const [reportType, setReportType] = useState('revenue')
@@ -371,54 +394,97 @@ const FinanceReports = () => {
 
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4">Financial Reports</Typography>
+      <PageHeader
+        title="Financial Reports"
+        subtitle="Generate and analyze financial reports"
+      >
         <Button
-          variant="outlined"
+          variant="contained"
           startIcon={<DownloadIcon />}
           onClick={handleExport}
           disabled={!data || isLoading}
+          sx={{
+            background: 'linear-gradient(135deg, #10B981 0%, #34D399 100%)',
+            boxShadow: '0 4px 14px 0 rgba(16, 185, 129, 0.39)',
+            '&:hover': {
+              background: 'linear-gradient(135deg, #059669 0%, #10B981 100%)',
+            },
+            '&:disabled': {
+              background: '#E2E8F0',
+            },
+          }}
         >
           Export Report
         </Button>
-      </Box>
+      </PageHeader>
 
-      <Grid container spacing={2} mb={3}>
-        <Grid item xs={12} sm={3}>
-          <TextField
-            fullWidth
-            select
-            label="Report Type"
-            value={reportType}
-            onChange={(e) => setReportType(e.target.value)}
-          >
-            <MenuItem value="revenue">Revenue Report</MenuItem>
-            <MenuItem value="expenses">Expense Report</MenuItem>
-            <MenuItem value="profitLoss">Profit & Loss</MenuItem>
-            <MenuItem value="cashFlow">Cash Flow</MenuItem>
-          </TextField>
-        </Grid>
-        <Grid item xs={12} sm={4}>
-          <TextField
-            fullWidth
-            label="Start Date"
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-          />
-        </Grid>
-        <Grid item xs={12} sm={4}>
-          <TextField
-            fullWidth
-            label="End Date"
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-          />
-        </Grid>
-      </Grid>
+      {/* Filters Card */}
+      <Card sx={{ mb: 4, border: '1px solid #E2E8F0' }}>
+        <CardContent>
+          <Typography variant="subtitle2" fontWeight={600} color="text.secondary" sx={{ mb: 2 }}>
+            Report Filters
+          </Typography>
+          <Grid container spacing={3} alignItems="center">
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                select
+                label="Report Type"
+                value={reportType}
+                onChange={(e) => setReportType(e.target.value)}
+                size="small"
+              >
+                <MenuItem value="revenue">
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <TrendingUpIcon sx={{ color: '#10B981', fontSize: 18 }} />
+                    Revenue Report
+                  </Box>
+                </MenuItem>
+                <MenuItem value="expenses">
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <TrendingDownIcon sx={{ color: '#EF4444', fontSize: 18 }} />
+                    Expense Report
+                  </Box>
+                </MenuItem>
+                <MenuItem value="profitLoss">
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <AccountBalanceIcon sx={{ color: '#6366F1', fontSize: 18 }} />
+                    Profit & Loss
+                  </Box>
+                </MenuItem>
+                <MenuItem value="cashFlow">
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <AssessmentIcon sx={{ color: '#F59E0B', fontSize: 18 }} />
+                    Cash Flow
+                  </Box>
+                </MenuItem>
+              </TextField>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Start Date"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                size="small"
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="End Date"
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                size="small"
+              />
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
 
       {renderReportContent()}
     </Box>

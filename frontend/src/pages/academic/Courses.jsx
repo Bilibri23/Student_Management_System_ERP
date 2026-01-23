@@ -2,20 +2,30 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Box,
-  Typography,
-  Button,
   CircularProgress,
   Alert,
   Chip,
   TextField,
   MenuItem,
   Grid,
+  Skeleton,
+  Card,
+  CardContent,
+  Typography,
+  Avatar,
 } from '@mui/material'
-import { Add as AddIcon } from '@mui/icons-material'
+import {
+  MenuBook as CourseIcon,
+  School as SchoolIcon,
+  People as PeopleIcon,
+  CheckCircle as ActiveIcon,
+} from '@mui/icons-material'
 import { academicApi } from '../../api/academic'
+import { hrApi } from '../../api/hr'
 import DataTable from '../../components/common/DataTable'
 import FormDialog from '../../components/common/FormDialog'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
+import PageHeader from '../../components/common/PageHeader'
 import { useAuthStore } from '../../store/authStore'
 
 const Courses = () => {
@@ -48,6 +58,14 @@ const Courses = () => {
     queryKey: ['courses', page, pageSize],
     queryFn: () => academicApi.getCourses({ page, size: pageSize }).then(res => res.data.data),
   })
+
+  // Fetch employees for instructor dropdown
+  const { data: employeesData } = useQuery({
+    queryKey: ['employees-for-courses'],
+    queryFn: () => hrApi.getEmployees({ page: 0, size: 100 }).then(res => res.data.data),
+  })
+
+  const instructors = employeesData?.content || []
 
   const createMutation = useMutation({
     mutationFn: (data) => academicApi.createCourse(data),
@@ -141,70 +159,140 @@ const Courses = () => {
   }
 
   const columns = [
-    { id: 'courseCode', label: 'Course Code', minWidth: 120 },
-    { id: 'courseName', label: 'Course Name', minWidth: 200 },
-    { id: 'credits', label: 'Credits', minWidth: 80 },
-    { id: 'department', label: 'Department', minWidth: 120 },
-    { id: 'semester', label: 'Semester', minWidth: 100 },
+    { field: 'courseCode', headerName: 'Course Code' },
+    { field: 'courseName', headerName: 'Course Name' },
+    { field: 'credits', headerName: 'Credits' },
+    { field: 'department', headerName: 'Department' },
+    { field: 'semester', headerName: 'Semester' },
     {
-      id: 'status',
-      label: 'Status',
-      minWidth: 100,
-      format: (value) => (
+      field: 'status',
+      headerName: 'Status',
+      render: (value) => (
         <Chip
-          label={value}
+          label={value || 'N/A'}
           color={value === 'ACTIVE' ? 'success' : value === 'INACTIVE' ? 'default' : 'warning'}
           size="small"
         />
       ),
     },
-    { id: 'currentEnrollment', label: 'Enrolled', minWidth: 80 },
-    { id: 'maxCapacity', label: 'Capacity', minWidth: 80 },
+    { field: 'currentEnrollment', headerName: 'Enrolled' },
+    { field: 'maxCapacity', headerName: 'Capacity' },
   ]
 
   const canEdit = user?.role === 'ADMIN' || user?.role === 'ACADEMIC_STAFF'
   const canDelete = user?.role === 'ADMIN'
 
+  const statsCards = [
+    {
+      title: 'Total Courses',
+      value: data?.totalElements || 0,
+      icon: <CourseIcon />,
+      color: '#6366F1',
+    },
+    {
+      title: 'Active Courses',
+      value: data?.content?.filter(c => c.status === 'ACTIVE').length || 0,
+      icon: <ActiveIcon />,
+      color: '#10B981',
+    },
+    {
+      title: 'Total Enrollment',
+      value: data?.content?.reduce((acc, c) => acc + (c.currentEnrollment || 0), 0) || 0,
+      icon: <PeopleIcon />,
+      color: '#F59E0B',
+    },
+  ]
+
   if (isLoading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
+      <Box>
+        <Skeleton variant="rounded" height={80} sx={{ mb: 3, borderRadius: 3 }} />
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          {[1, 2, 3].map((i) => (
+            <Grid item xs={12} sm={4} key={i}>
+              <Skeleton variant="rounded" height={100} sx={{ borderRadius: 3 }} />
+            </Grid>
+          ))}
+        </Grid>
+        <Skeleton variant="rounded" height={400} sx={{ borderRadius: 3 }} />
       </Box>
     )
   }
 
   if (error) {
-    return <Alert severity="error">Failed to load courses</Alert>
+    return (
+      <Alert
+        severity="error"
+        sx={{ borderRadius: 3 }}
+      >
+        Failed to load courses. Please try again later.
+      </Alert>
+    )
   }
 
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4">Courses</Typography>
-        {canEdit && (
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => {
-              resetForm()
-              setOpenDialog(true)
-            }}
-          >
-            Add Course
-          </Button>
-        )}
-      </Box>
+      <PageHeader
+        title="Courses"
+        subtitle="Manage academic courses and programs"
+        action={canEdit ? () => { resetForm(); setOpenDialog(true) } : undefined}
+        actionLabel="Add Course"
+        badge={`${data?.totalElements || 0} total`}
+      />
+
+      {/* Stats Cards */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        {statsCards.map((stat, index) => (
+          <Grid item xs={12} sm={4} key={index}>
+            <Card
+              sx={{
+                background: `linear-gradient(135deg, ${stat.color}10 0%, ${stat.color}05 100%)`,
+                border: `1px solid ${stat.color}20`,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: `0 8px 24px ${stat.color}20`,
+                },
+              }}
+            >
+              <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Avatar
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    bgcolor: `${stat.color}20`,
+                    color: stat.color,
+                  }}
+                >
+                  {stat.icon}
+                </Avatar>
+                <Box>
+                  <Typography variant="h4" fontWeight={700} color={stat.color}>
+                    {stat.value}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {stat.title}
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
 
       <DataTable
         columns={columns}
         rows={data?.content || []}
         page={page}
         pageSize={pageSize}
-        totalElements={data?.totalElements || 0}
+        total={data?.totalElements || 0}
         onPageChange={setPage}
         onPageSizeChange={setPageSize}
-        onEdit={canEdit ? handleEdit : undefined}
-        onDelete={canDelete ? handleDelete : undefined}
+        actions={{
+          edit: canEdit ? handleEdit : undefined,
+          delete: canDelete ? handleDelete : undefined,
+        }}
+        emptyMessage="No courses found"
       />
 
       <FormDialog
@@ -335,11 +423,21 @@ const Courses = () => {
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label="Instructor ID"
-              type="number"
+              select
+              label="Instructor"
               value={formData.instructorId}
               onChange={(e) => setFormData({ ...formData, instructorId: e.target.value })}
-            />
+              helperText={instructors.length === 0 ? "No instructors available. Add employees in HR first." : ""}
+            >
+              <MenuItem value="">
+                <em>None (Optional)</em>
+              </MenuItem>
+              {instructors.map((emp) => (
+                <MenuItem key={emp.id} value={emp.id}>
+                  {emp.firstName} {emp.lastName} - {emp.position || emp.department || 'Staff'}
+                </MenuItem>
+              ))}
+            </TextField>
           </Grid>
           <Grid item xs={12}>
             <TextField

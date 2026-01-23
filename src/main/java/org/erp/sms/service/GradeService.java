@@ -162,6 +162,12 @@ public class GradeService {
     }
 
     @Transactional(readOnly = true)
+    public List<GradeResponse> getAllGrades() {
+        List<Grade> grades = gradeRepository.findAll();
+        return grades.stream().map(this::mapToResponse).toList();
+    }
+
+    @Transactional(readOnly = true)
     public GradeResponse.CourseGradeSummary getStudentCourseGradeSummary(Long studentId, Long courseId) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + courseId));
@@ -300,6 +306,9 @@ public class GradeService {
     }
 
     private GradeResponse mapToResponse(Grade grade) {
+        Double percentage = grade.getPercentage();
+        String letterGrade = calculateLetterGrade(percentage != null ? percentage : 0.0);
+        
         return GradeResponse.builder()
                 .id(grade.getId())
                 .studentId(grade.getStudent().getId())
@@ -313,7 +322,8 @@ public class GradeService {
                 .weightage(grade.getComponent().getWeightage())
                 .maxMarks(grade.getComponent().getMaxMarks())
                 .marksObtained(grade.getMarksObtained())
-                .percentage(grade.getPercentage())
+                .percentage(percentage)
+                .grade(letterGrade)
                 .comments(grade.getComments())
                 .approved(grade.getApproved())
                 .createdAt(grade.getCreatedAt())

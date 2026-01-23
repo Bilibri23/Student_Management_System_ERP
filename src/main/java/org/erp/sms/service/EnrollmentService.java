@@ -197,6 +197,13 @@ public class EnrollmentService {
         return mapToPageResponse(enrollmentPage);
     }
 
+    @Transactional(readOnly = true)
+    public PageResponse<EnrollmentResponse> getAllEnrollmentsPaged(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Enrollment> enrollmentPage = enrollmentRepository.findAll(pageable);
+        return mapToPageResponse(enrollmentPage);
+    }
+
     private EnrollmentResponse mapToResponse(Enrollment enrollment) {
         EnrollmentResponse.StudentInfo studentInfo = EnrollmentResponse.StudentInfo.builder()
                 .id(enrollment.getStudent().getId())

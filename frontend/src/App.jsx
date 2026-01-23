@@ -14,6 +14,7 @@ import Dashboard from './pages/dashboard/Dashboard'
 
 // Academic Pages
 import Courses from './pages/academic/Courses'
+import CourseCatalog from './pages/academic/CourseCatalog'
 import Enrollments from './pages/academic/Enrollments'
 import Attendance from './pages/academic/Attendance'
 import Grades from './pages/academic/Grades'
@@ -63,6 +64,7 @@ function App() {
 
           {/* Academic Module */}
           <Route path="/academic/courses" element={<Courses />} />
+          <Route path="/academic/catalog" element={<CourseCatalog />} />
           <Route path="/academic/enrollments" element={<Enrollments />} />
           <Route path="/academic/attendance" element={<Attendance />} />
           <Route path="/academic/grades" element={<Grades />} />

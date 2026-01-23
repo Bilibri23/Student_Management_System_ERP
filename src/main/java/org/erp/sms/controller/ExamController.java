@@ -29,20 +29,22 @@ public class ExamController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_STAFF', 'STUDENT')")
-    public ResponseEntity<ApiResponse<List<ExamResponse>>> getAllExams(
+    public ResponseEntity<ApiResponse<PageResponse<ExamResponse>>> getAllExams(
             @RequestParam(required = false) Long studentId,
             @RequestParam(required = false) Long courseId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        List<ExamResponse> exams;
+        PageResponse<ExamResponse> exams;
         
         if (studentId != null) {
-            exams = examService.getStudentExams(studentId);
+            List<ExamResponse> examList = examService.getStudentExams(studentId);
+            exams = new PageResponse<>(examList, page, size, examList.size(), 1, true, true);
         } else if (courseId != null) {
-            exams = examService.getExamsByCourse(courseId);
+            List<ExamResponse> examList = examService.getExamsByCourse(courseId);
+            exams = new PageResponse<>(examList, page, size, examList.size(), 1, true, true);
         } else {
-            // For staff, return empty or implement getAllExams
-            exams = List.of();
+            // For admin/staff without filters, return all exams
+            exams = examService.getAllExamsPaged(page, size);
         }
         
         return ResponseEntity.ok(ApiResponse.success(exams));

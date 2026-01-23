@@ -26,6 +26,7 @@ public class GradeResponse {
     private Double maxMarks;
     private Double marksObtained;
     private Double percentage;
+    private String grade;  // Letter grade (A, B, C, D, E, F)
     private String comments;
     private Boolean approved;
     private LocalDateTime createdAt;

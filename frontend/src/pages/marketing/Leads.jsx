@@ -10,12 +10,23 @@ import {
   TextField,
   MenuItem,
   Grid,
+  Card,
+  CardContent,
+  Avatar,
+  Skeleton,
 } from '@mui/material'
-import { Add as AddIcon } from '@mui/icons-material'
+import {
+  Add as AddIcon,
+  PersonAdd as LeadIcon,
+  HourglassEmpty as NewIcon,
+  Phone as ContactedIcon,
+  CheckCircle as ConvertedIcon,
+} from '@mui/icons-material'
 import { marketingApi } from '../../api/marketing'
 import DataTable from '../../components/common/DataTable'
 import FormDialog from '../../components/common/FormDialog'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
+import PageHeader from '../../components/common/PageHeader'
 
 const Leads = () => {
   const queryClient = useQueryClient()
@@ -187,39 +198,68 @@ const Leads = () => {
     return <Alert severity="error">Failed to load leads</Alert>
   }
 
+  const statsCards = [
+    { title: 'Total Leads', value: data?.totalElements || 0, icon: <LeadIcon />, color: '#6366F1' },
+    { title: 'New', value: rows.filter(l => l.status === 'NEW').length, icon: <NewIcon />, color: '#F59E0B' },
+    { title: 'Contacted', value: rows.filter(l => l.status === 'CONTACTED').length, icon: <ContactedIcon />, color: '#3B82F6' },
+    { title: 'Converted', value: rows.filter(l => l.status === 'CONVERTED').length, icon: <ConvertedIcon />, color: '#10B981' },
+  ]
+
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4">Leads</Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => {
-            setSelectedLead(null)
-            resetForm()
-            setOpenDialog(true)
-          }}
-        >
-          Add Lead
-        </Button>
-      </Box>
+      <PageHeader
+        title="Leads"
+        subtitle="Manage prospective student leads"
+        action={() => { setSelectedLead(null); resetForm(); setOpenDialog(true) }}
+        actionLabel="Add Lead"
+        badge={`${data?.totalElements || 0} total`}
+      />
 
-      <Box mb={2}>
-        <TextField
-          select
-          label="Filter by Status"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          size="small"
-          sx={{ minWidth: 200 }}
-        >
-          <MenuItem value="">All</MenuItem>
-          <MenuItem value="NEW">New</MenuItem>
-          <MenuItem value="CONTACTED">Contacted</MenuItem>
-          <MenuItem value="CONVERTED">Converted</MenuItem>
-          <MenuItem value="LOST">Lost</MenuItem>
-        </TextField>
-      </Box>
+      {/* Stats Cards */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        {statsCards.map((stat, index) => (
+          <Grid item xs={6} sm={3} key={index}>
+            <Card
+              sx={{
+                background: `linear-gradient(135deg, ${stat.color}10 0%, ${stat.color}05 100%)`,
+                border: `1px solid ${stat.color}20`,
+                transition: 'all 0.3s ease',
+                '&:hover': { transform: 'translateY(-2px)', boxShadow: `0 8px 24px ${stat.color}20` },
+              }}
+            >
+              <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2, py: 2 }}>
+                <Avatar sx={{ width: 40, height: 40, bgcolor: `${stat.color}20`, color: stat.color }}>
+                  {stat.icon}
+                </Avatar>
+                <Box>
+                  <Typography variant="h5" fontWeight={700} color={stat.color}>{stat.value}</Typography>
+                  <Typography variant="caption" color="text.secondary">{stat.title}</Typography>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+
+      {/* Filter */}
+      <Card sx={{ mb: 3, border: '1px solid #E2E8F0' }}>
+        <CardContent sx={{ py: 2 }}>
+          <TextField
+            select
+            label="Filter by Status"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            size="small"
+            sx={{ minWidth: 200 }}
+          >
+            <MenuItem value="">All Statuses</MenuItem>
+            <MenuItem value="NEW">New</MenuItem>
+            <MenuItem value="CONTACTED">Contacted</MenuItem>
+            <MenuItem value="CONVERTED">Converted</MenuItem>
+            <MenuItem value="LOST">Lost</MenuItem>
+          </TextField>
+        </CardContent>
+      </Card>
 
       <DataTable
         columns={columns}

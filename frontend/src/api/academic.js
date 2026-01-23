@@ -12,7 +12,10 @@ export const academicApi = {
 
   // Enrollments
   getEnrollments: (params) => api.get('/academic/enrollments', { params }),
+  getEnrollmentsByCourse: (courseId, params) => api.get(`/academic/enrollments/course/${courseId}/paged`, { params }),
+  getEnrollmentsByStudent: (studentId, params) => api.get(`/academic/enrollments/student/${studentId}/paged`, { params }),
   enrollStudent: (data) => api.post('/academic/enrollments', data),
+  approveEnrollment: (id) => api.patch(`/academic/enrollments/${id}/approve`),
   dropEnrollment: (id) => api.delete(`/academic/enrollments/${id}`),
   bulkEnroll: (data) => api.post('/academic/enrollments/bulk', data),
 
@@ -31,6 +34,10 @@ export const academicApi = {
   getTranscript: (studentId) => api.get(`/academic/grades/student/${studentId}/transcript`),
   downloadTranscript: (studentId) => 
     api.get(`/academic/grades/student/${studentId}/transcript/pdf`, { responseType: 'blob' }),
+  
+  // Grade Components
+  getGradeComponents: (courseId) => api.get(`/academic/grades/components/course/${courseId}`),
+  createGradeComponent: (data) => api.post('/academic/grades/components', data),
 
   // Exams
   getExams: (params) => api.get('/academic/exams', { params }),

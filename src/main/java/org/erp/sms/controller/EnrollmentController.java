@@ -35,8 +35,8 @@ public class EnrollmentController {
         } else if (courseId != null) {
             enrollments = enrollmentService.getCourseEnrollmentsPaged(courseId, page, size);
         } else {
-            // For staff without filters, return empty - should use specific endpoints
-            enrollments = new PageResponse<>(List.of(), page, size, 0, 0, true, true);
+            // For admin/staff without filters, return all enrollments
+            enrollments = enrollmentService.getAllEnrollmentsPaged(page, size);
         }
         
         return ResponseEntity.ok(ApiResponse.success(enrollments));
